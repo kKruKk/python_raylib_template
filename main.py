@@ -3,80 +3,77 @@ import time as time
 
 rl.set_random_seed(int(time.perf_counter()))
 
-class Entity:
-    def __init__(self,width,height,x,y):
-        self.width = width
-        self.height = height
-        self.x = x
-        self.y = y
-        self.speed = 10
-        self.direction = [0.0,0.0]
-        self.color = rl.Color(64,255,128,255)
+title = "python raylib"
+screen_width = 800
+screen_height = 600
 
-    def draw(self):
-        rl.draw_rectangle(self.x,self.y,self.width,self.height,self.color)
+rl.init_window(screen_width,screen_height,title)
+#rl.set_target_fps(60)
 
-    def update_position(self):
-        normalized = rl.vector2_normalize(self.direction)
-        v = rl.vector2_scale(normalized,self.speed)
-        self.x = int(float(self.x) + v.x)
-        self.y = int(float(self.y) + v.y)
+time_start : float = 0
+time_end : float = 0
+dt : float  = 0
+time_acc : float = 0
+time_acc_second : float = 0
 
-    def border_teleport(self,x,y):
-        if self.x < 0:
-            self.x = x 
-        if self.x > x:
-            self.x = 0 
-        if self.y < 0:
-            self.y = y 
-        if self.y > y:
-            self.y = 0             
+max_fps : float = 120
+max_frame_time : float = 1/max_fps
 
-player = Entity(64,64,100,100)
+fps_counter = 0
+fps = 0
+update_counter = 0
+is_running : bool = True 
+is_drawing : bool = False
 
-squares = []
-for i in range(1000):
-    squares.append(Entity(8,8,rl.get_random_value(50,750),rl.get_random_value(50,550)))
-    squares[i].color = rl.Color(rl.get_random_value(64,255),rl.get_random_value(64,255),rl.get_random_value(64,255),255)
-    squares[i].speed = 4
+import game_module
 
-rl.init_window(800,600,"python raylib")
-rl.set_target_fps(60)
+# Main loop
+while is_running:
 
-while not rl.window_should_close():
+    # Timing
+    time_end =  rl.get_time()
+    dt = time_end - time_start 
+    time_start = time_end 
 
-    #input
-    player.direction = [0,0]
-    if rl.is_key_down(rl.KEY_E):
-        player.direction[1] = -1
-    if rl.is_key_down(rl.KEY_D):
-        player.direction[1] = 1
-    if rl.is_key_down(rl.KEY_W):
-        player.direction[0] = -1
-    if rl.is_key_down(rl.KEY_S):
-        player.direction[0] = 1        
+    time_acc += dt 
+    time_acc_second += dt
 
-    #update
-    Entity.update_position(player)
-
-    for item in squares:
-        item.direction[0] += (rl.get_random_value(0,100) - 50) 
-        item.direction[1] += (rl.get_random_value(0,100) - 50)
-        Entity.update_position(item)
-        Entity.border_teleport(item,rl.get_screen_width(),rl.get_screen_height())
-
-
-
-    #drawing
-    rl.begin_drawing()
-    rl.clear_background(rl.ORANGE)
     
-    for i in squares:
-        Entity.draw(i)
+    # Update 
+    update_counter = 0
+    while time_acc > max_frame_time:
+        time_acc -= max_frame_time
+        update_counter += 1
 
-    Entity.draw(player)
-    rl.draw_fps(10,10)
+        is_running = not rl.window_should_close()
+        if not is_running: 
+            break
 
-    rl.end_drawing()
+        if not is_drawing:
+            rl.poll_input_events()
+        
+        is_drawing = False
+        game_module.input()  
+
+
+        game_module.update(max_frame_time)
+
+        if update_counter > 10:
+            break
+    
+    # Rendering 
+    if update_counter > 0:
+        game_module.render(max_frame_time,fps)
+        is_drawing = True
+        fps_counter += 1
+    
+    # Do things each second
+    if time_acc_second > 1:
+        time_acc_second -= 1
+        fps = fps_counter
+        fps_counter = 0
+    
 
 rl.close_window()    
+
+   
