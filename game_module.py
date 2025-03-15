@@ -1,6 +1,8 @@
 
 import pyray as rl 
 
+import loop_data_module
+
 class Entity:
     def __init__(self,width = 32,height = 32,x : float = 0,y : float = 0,speed = 10):
         self.width : int = width
@@ -36,14 +38,15 @@ class Entity:
 
 
 class Game:
-    def __init__(self,screen_width : int,screen_height : int,num_of_squares : int):
-        self.screen_width : int = screen_width
-        self.screen_height : int = screen_height
+    def __init__(self,loop : loop_data_module.Loop_Data):
+        self.loop = loop
+        self.screen_width : int = rl.get_screen_width()
+        self.screen_height : int = rl.get_screen_height()
 
         self.player : Entity = Entity(64,64,100,100,200)
         self.squares : list[Entity] = []
 
-        for i in range(num_of_squares):
+        for i in range(500):
             self.squares.append(
                 Entity(
                     8,8,
@@ -68,7 +71,7 @@ def input(game : Game):
     if rl.is_key_down(rl.KEY_S):
         game.player.direction[0] = 1  
 
-def update(game : Game, dt : float ):
+def update(game : Game,t : float, dt : float ):
     Entity.update_position(game.player,dt)
     Entity.border_teleport(game.player,game.screen_width,game.screen_height)
 
@@ -80,7 +83,7 @@ def update(game : Game, dt : float ):
         Entity.border_teleport(item,game.screen_width,game.screen_height)
 
 
-def render(game : Game,dt : float, fps : int ):
+def render(game : Game ):
     rl.begin_drawing()
     rl.clear_background(rl.ORANGE)
     
@@ -88,8 +91,8 @@ def render(game : Game,dt : float, fps : int ):
         Entity.draw(i)
 
     Entity.draw(game.player)
-    text = str(fps)
     
+    text = str(game.loop.fps)
     rl.draw_text(text,10,10,30,rl.GREEN)
 
     rl.end_drawing()

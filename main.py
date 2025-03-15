@@ -1,7 +1,9 @@
 import pyray as rl 
 import time as time
 
+import loop_data_module
 import game_module
+
 
 def main():
     rl.set_random_seed(int(time.perf_counter()))
@@ -13,70 +15,54 @@ def main():
     rl.init_window(screen_width,screen_height,title)
     #rl.set_target_fps(60)
 
-    time_start : float = 0
-    time_end : float = 0
-    dt : float  = 0
-    time_acc : float = 0
-    time_acc_second : float = 0
-
-    max_fps : float = 120
-    max_frame_time : float = 1/max_fps
-
-    fps_counter = 0
-    fps = 0
-    update_counter = 0
-    is_running : bool = True 
-    is_drawing : bool = False
-
-
-    game = game_module.Game(screen_width,screen_height,1000)   
+    loop = loop_data_module.Loop_Data()
+    game = game_module.Game(loop)   
 
     # Main loop
-    while is_running:
+    while loop.is_running:
 
         # Timing
-        time_end =  rl.get_time()
-        dt = time_end - time_start 
-        time_start = time_end 
+        loop.new_time =  rl.get_time()
+        loop.frame_time = loop.new_time - loop.current_time  
+        loop.current_time = loop.new_time 
 
-        time_acc += dt 
-        time_acc_second += dt
+        loop.accumulator += loop.frame_time 
+        loop.accumulator_each_second += loop.frame_time
 
         
         # Update 
-        update_counter = 0
-        while time_acc > max_frame_time:
-            time_acc -= max_frame_time
-            update_counter += 1
+        loop.update_counter = 0
+        while loop.accumulator >= loop.dt:
+            loop.accumulator -= loop.dt
+            loop.update_counter += 1
 
-            is_running = not rl.window_should_close()
-            if not is_running: 
+            loop.is_running = not rl.window_should_close()
+            if not loop.is_running: 
                 break
 
-            if not is_drawing:
+            if not loop.is_drawing:
                 rl.poll_input_events()
             
-            is_drawing = False
+            loop.is_drawing = False
+
             game_module.input(game)  
+            game_module.update(game,loop.t,loop.dt)
 
-
-            game_module.update(game,max_frame_time)
-
-            if update_counter > 10:
-                time_acc = 0
+            if loop.update_counter > 10:
+                loop.accumulator = 0
                 break
         
         # Rendering 
-        if update_counter > 0:
-            game_module.render(game,max_frame_time,fps)
-            is_drawing = True
-            fps_counter += 1
+        if loop.update_counter > 0:
+            game_module.render(game)
+            loop.is_drawing = True
+            loop.fps_counter += 1
         
         # Do things each second
-        if time_acc_second > 1:
-            time_acc_second -= 1
-            fps = fps_counter
-            fps_counter = 0
+        if loop.accumulator_each_second >= 1.0:
+            loop.accumulator_each_second -= 1.0
+            loop.fps = loop.fps_counter
+            loop.fps_counter = 0
         
     rl.close_window()    
 
