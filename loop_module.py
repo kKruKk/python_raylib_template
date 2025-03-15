@@ -26,6 +26,10 @@ class Loop_Data:
     is_running : bool = True 
     is_drawing : bool = False
 
+    def change_max_fps(self,max_fps : float):
+        self.max_fps = max_fps 
+        self.dt = 1.0 / self.max_fps
+
 import pyray as rl
 
 def run(loop : Loop_Data,game : Game):
