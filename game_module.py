@@ -55,9 +55,8 @@ class Game:
             
             self.squares[i].color = rl.Color(rl.get_random_value(64,255),rl.get_random_value(64,255),rl.get_random_value(64,255),255)
 
-game = Game(rl.get_screen_width(),rl.get_screen_height())    
-
-def input():
+ 
+def input(game : Game):
     game.player.direction = [0.0,0.0]
 
     if rl.is_key_down(rl.KEY_E):
@@ -69,7 +68,7 @@ def input():
     if rl.is_key_down(rl.KEY_S):
         game.player.direction[0] = 1  
 
-def update(dt : float ):
+def update(game : Game, dt : float ):
     Entity.update_position(game.player,dt)
     Entity.border_teleport(game.player,game.screen_width,game.screen_height)
 
@@ -81,7 +80,7 @@ def update(dt : float ):
         Entity.border_teleport(item,game.screen_width,game.screen_height)
 
 
-def render(dt : float, fps : int ):
+def render(game : Game,dt : float, fps : int ):
     rl.begin_drawing()
     rl.clear_background(rl.ORANGE)
     
