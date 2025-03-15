@@ -36,14 +36,14 @@ class Entity:
 
 
 class Game:
-    def __init__(self,screen_width : int,screen_height : int):
+    def __init__(self,screen_width : int,screen_height : int,num_of_squares : int):
         self.screen_width : int = screen_width
         self.screen_height : int = screen_height
 
         self.player : Entity = Entity(64,64,100,100,200)
         self.squares : list[Entity] = []
 
-        for i in range(1000):
+        for i in range(num_of_squares):
             self.squares.append(
                 Entity(
                     8,8,

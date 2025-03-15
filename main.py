@@ -29,7 +29,7 @@ def main():
     is_drawing : bool = False
 
 
-    game = game_module.Game(screen_width,screen_height)   
+    game = game_module.Game(screen_width,screen_height,1000)   
 
     # Main loop
     while is_running:
