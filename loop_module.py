@@ -22,9 +22,11 @@ class Loop_Data:
 
     fps_counter : int = 0
     fps : int = 0
-    update_counter: int = 0
     is_running : bool = True 
+    is_updating: bool = False
     is_drawing : bool = False
+
+    current_scene : Game 
 
     def change_max_fps(self,max_fps : float):
         self.max_fps = max_fps 
@@ -33,6 +35,7 @@ class Loop_Data:
 import pyray as rl
 
 def run(loop : Loop_Data,game : Game):
+    loop.current_scene = game
     while loop.is_running:
 
         # Timing
@@ -45,10 +48,9 @@ def run(loop : Loop_Data,game : Game):
 
         
         # Update 
-        loop.update_counter = 0
         while loop.accumulator >= loop.dt:
-            loop.accumulator -= loop.dt
-            loop.update_counter += 1
+            if loop.accumulator > loop.dt * 10:
+                loop.accumulator = loop.dt * 10
 
             loop.is_running = not rl.window_should_close()
             if not loop.is_running: 
@@ -59,16 +61,18 @@ def run(loop : Loop_Data,game : Game):
             
             loop.is_drawing = False
 
-            game.input()  
-            game.update(loop.t,loop.dt)
+            loop.current_scene.input()  
+            loop.current_scene.update(loop.t,loop.dt)
 
-            if loop.update_counter > 10:
-                loop.accumulator = 0
-                break
+            loop.accumulator -= loop.dt
+            loop.is_updating = True
         
         # Rendering 
-        if loop.update_counter > 0:
-            game.render()
+        if loop.is_updating:
+            rl.begin_drawing()
+            loop.current_scene.render()
+            rl.end_drawing()
+            loop.is_updating = False
             loop.is_drawing = True
             loop.fps_counter += 1
         

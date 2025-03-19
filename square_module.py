@@ -2,6 +2,8 @@
 import pyray as rl 
 import loop_module
 
+import game_template_module as scene
+
 class Game:
     def __init__(self,loop : loop_module.Loop_Data):
         self.loop = loop
@@ -47,9 +49,12 @@ class Game:
             Entity.update_position(item,dt)
             Entity.border_teleport(item,self.screen_width,self.screen_height)
 
+        # change scane
+        # if self.player.x > 400:
+        #     self.loop.current_scene = scene.Game(self.loop)
 
     def render(self):
-        rl.begin_drawing()
+        
         rl.clear_background(rl.ORANGE)
         
         for i in self.squares:
@@ -60,7 +65,7 @@ class Game:
         text = str(self.loop.fps)
         rl.draw_text(text,10,10,30,rl.GREEN)
 
-        rl.end_drawing()
+       
 
 
 
